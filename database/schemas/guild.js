@@ -45,6 +45,10 @@ const Schema = new mongoose.Schema({
 			removeLinks: { type: Boolean, default: false },
 			removeProfanity: { type: Boolean, default: false },
 			removeDuplicateText: { type: Boolean, default: false },
+      auditLogging: {
+        enabled: { type: Boolean, default: false },
+        channel: { type: Number, default: "0" }
+      }
 		},
 		leveling: {
 			enabled: { type: Boolean, default: false },

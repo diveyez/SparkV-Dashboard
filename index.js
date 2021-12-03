@@ -13,11 +13,7 @@ const database = require("./database/handler");
 const Logger = require("./modules/logger");
 
 // Load //
-console.log(require("chalk").blue("   ____ _     _ _ _ ____  _           "));
-console.log(require("chalk").blue("  / ___| |__ / | | | __ )| | _____  __"));
-console.log(require("chalk").blue(" | |   | '_ | | | |  _ | |/ _  / /"));
-console.log(require("chalk").blue(" | |___| | | | | | | |_) | | (_) >  < "));
-console.log(require("chalk").blue("  ____|_| |_|_|_|_|____/|_|___/_/_ "));
+console.log(require("asciiart-logo")(require("./package.json")).render());
 
 // Start //
 async function Start() {
@@ -69,7 +65,7 @@ async function Start() {
       guildId: "763803059876397056"
     },
     underMaintenanceAccessKey: process.env.admin_access_token,
-    underMaintenanceAccessPage: "/admin_access",
+    underMaintenanceAccessPage: "/admin",
     useUnderMaintenance: false,
     underMaintenance: {
       title: "Under Maintenance",
@@ -80,15 +76,15 @@ async function Start() {
         "<br>",
         'Join our <a href="https://discord.gg/PPtzT8Mu3h">Discord  Server</a> to get notified when maintance turns off.'
       ],
-      bodyBackgroundColors: ["#ffa191", "#ffc247"],
-      buildingsColor: "#ff6347",
-      craneDivBorderColor: "#ff6347",
-      craneArmColor: "#f88f7c",
-      craneWeightColor: "#f88f7c",
-      outerCraneColor: "#ff6347",
-      craneLineColor: "#ff6347",
-      craneCabinColor: "#f88f7c",
-      craneStandColors: ["#ff6347", , "#f29b8b"]
+      bodyBackgroundColors: ["#0c2646", "#2a5788"],
+      buildingsColor: "#2a5788",
+      craneDivBorderColor: "#2a5788",
+      craneArmColor: "#2a5788",
+      craneWeightColor: "#2a5788",
+      outerCraneColor: "#2a5788",
+      craneLineColor: "#2a5788",
+      craneCabinColor: "#2a5788",
+      craneStandColors: ["#0c2646", "#2a5788"]
     },
     theme: DarkTheme({
       information: {
@@ -96,11 +92,11 @@ async function Start() {
         websiteTitle: "SparkV",
         websiteName: "SparkV",
         websiteUrl: "https://www.ch1ll.tk/",
-        supporteMail: "support@ch1ll.dev", //Currently Unused
+        supporteMail: "kingch1ll012@gmail.com", // support@ch1ll.dev
         imageFavicon: "https://sparkv.tk/assets/images/SparkV.png",
         iconURL: "https://sparkv.tk/assets/images/SparkV.png",
         pagestylebg:
-          "linear-gradient(to right, #0c2646 0%, #e8e523 60%, #2a5788 100%)",
+          "linear-gradient(to right, #0c2646 0%, #2a5788 60%, #2a5788 100%)",
         main_color: "#a29f0e",
         sub_color: "#ebdbdb"
       },
@@ -178,8 +174,8 @@ async function Start() {
     }),
     settings: [
       {
-        categoryId: "Bot",
-        categoryName: "Bot Settings",
+        categoryId: "settings",
+        categoryName: "Settings",
         categoryDescription: "Bot settings for SparkV.",
         categoryOptionsList: [
           {
@@ -263,11 +259,34 @@ async function Start() {
         ]
       },
       {
-        categoryId: "autoModSettings",
-        categoryName: "Auto Mod Settings",
-        categoryDescription:
-          "Start moderating your server with one of Discord's most POWERFUL bot automod filters.",
+        categoryId: "moderater",
+        categoryName: "Moderater",
+        categoryDescription: "Evolve your moderation with automation! SparkV will help you moderate your server.",
         categoryOptionsList: [
+          {
+            title: "Audit Logging",
+            description: "Don't miss a thing! If enabled, SparkV will log particular events and send them in a particular channel.",
+            optionType: "spacer",
+          },
+          {
+            optionId: "auditLogging",
+            optionName: "Enabled",
+            optionDescription: "Whether audit logging is enabled or not.",
+            optionType: DBD.formTypes.switch(false, false),
+            getActualSet: async ({ guild }) => {
+              const data = await database.getGuild(guild.id);
+
+              return data.plugins.automod.auditLogging || false;
+            },
+            setNew: async ({ guild, newData }) => {
+              const data = await database.getGuild(guild.id);
+
+              data.plugins.automod.auditLogging.enabled = Boolean(newData);
+              data.markModified("plugins.automod.removeLinks");
+
+              await data.save();
+            }
+          },
           {
             optionId: "removeLinks",
             optionName: "Delete Links",
@@ -331,73 +350,8 @@ async function Start() {
         ]
       },
       {
-        categoryId: "leveling",
-        categoryName: "Leveling Settings",
-        categoryDescription: "DESC",
-        categoryOptionsList: [
-          {
-            optionId: "levelingEnabled",
-            optionName: "Leveling Enabled",
-            optionDescription:
-              "When enabled, SparkV give users that talk a random amount of XP. Specified in the fields bellow.",
-            optionType: DBD.formTypes.switch(false, false),
-            getActualSet: async ({ guild }) => {
-              const data = await database.getGuild(guild.id);
-
-              return data.plugins.leveling.enabled;
-            },
-            setNew: async ({ guild, newData }) => {
-              const data = await database.getGuild(guild.id);
-
-              data.plugins.leveling.enabled = Boolean(newData);
-              data.markModified("plugins.leveling.enabled");
-
-              await data.save();
-            }
-          },
-          {
-            optionId: "levelingMax",
-            optionName: "Leveling Max",
-            optionDescription: "Maximum",
-            optionType: DBD.formTypes.input("25", 1, 5, false, true),
-            getActualSet: async ({ guild }) => {
-              const data = await database.getGuild(guild.id);
-
-              return data.plugins.leveling.max;
-            },
-            setNew: async ({ guild, newData }) => {
-              const data = await database.getGuild(guild.id);
-
-              data.plugins.leveling.max = newData;
-              data.markModified("plugins.leveling.max");
-
-              await data.save();
-            }
-          },
-          {
-            optionId: "levelingMin",
-            optionName: "Leveling Min",
-            optionDescription: "Minimum",
-            optionType: DBD.formTypes.input("5", 1, 5, false, true),
-            getActualSet: async ({ guild }) => {
-              const data = await database.getGuild(guild.id);
-
-              return data.plugins.leveling.min;
-            },
-            setNew: async ({ guild, newData }) => {
-              const data = await database.getGuild(guild.id);
-
-              data.plugins.leveling.min = newData;
-              data.markModified("plugins.leveling.min");
-
-              await data.save();
-            }
-          }
-        ]
-      },
-      {
         categoryId: "Welcome",
-        categoryName: "Welcome Settings",
+        categoryName: "Welcome",
         categoryDescription:
           "Give new users a hello, and leaving users a goodbye.",
         categoryOptionsList: [
@@ -470,7 +424,7 @@ async function Start() {
       },
       {
         categoryId: "Goodbye",
-        categoryName: "Goodbye Settings",
+        categoryName: "Goodbye",
         categoryDescription: "Give leaving users a goodbye.",
         categoryOptionsList: [
           {
@@ -539,7 +493,72 @@ async function Start() {
             }
           }
         ]
-      }
+      },
+      {
+        categoryId: "leveling",
+        categoryName: "Leveling Settings",
+        categoryDescription: "DESC",
+        categoryOptionsList: [
+          {
+            optionId: "levelingEnabled",
+            optionName: "Leveling Enabled",
+            optionDescription:
+              "When enabled, SparkV give users that talk a random amount of XP. Specified in the fields bellow.",
+            optionType: DBD.formTypes.switch(false, false),
+            getActualSet: async ({ guild }) => {
+              const data = await database.getGuild(guild.id);
+
+              return data.plugins.leveling.enabled;
+            },
+            setNew: async ({ guild, newData }) => {
+              const data = await database.getGuild(guild.id);
+
+              data.plugins.leveling.enabled = Boolean(newData);
+              data.markModified("plugins.leveling.enabled");
+
+              await data.save();
+            }
+          },
+          {
+            optionId: "levelingMax",
+            optionName: "Leveling Max",
+            optionDescription: "Maximum",
+            optionType: DBD.formTypes.input("25", 1, 5, false, true),
+            getActualSet: async ({ guild }) => {
+              const data = await database.getGuild(guild.id);
+
+              return data.plugins.leveling.max;
+            },
+            setNew: async ({ guild, newData }) => {
+              const data = await database.getGuild(guild.id);
+
+              data.plugins.leveling.max = newData;
+              data.markModified("plugins.leveling.max");
+
+              await data.save();
+            }
+          },
+          {
+            optionId: "levelingMin",
+            optionName: "Leveling Min",
+            optionDescription: "Minimum",
+            optionType: DBD.formTypes.input("5", 1, 5, false, true),
+            getActualSet: async ({ guild }) => {
+              const data = await database.getGuild(guild.id);
+
+              return data.plugins.leveling.min;
+            },
+            setNew: async ({ guild, newData }) => {
+              const data = await database.getGuild(guild.id);
+
+              data.plugins.leveling.min = newData;
+              data.markModified("plugins.leveling.min");
+
+              await data.save();
+            }
+          }
+        ]
+      },
       /*
       {
         categoryId: "other",
@@ -574,6 +593,13 @@ async function Start() {
   });
 
   Dashboard.init();
+  
+  const app = Dashboard.getApp();
+
+  app.use((req, res, next) => {
+    if (!req.session.user) return next();
+    if (process.env.bannedUsers.includes(req.session.user.id)) return res.send("You are not allowed to use this website.");
+  });
 }
 
 Start().catch(err => console.error(err));
